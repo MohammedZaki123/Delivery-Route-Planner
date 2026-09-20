@@ -15,19 +15,19 @@ const { planTrips, buildSummary, VEHICLE_CAPACITY_KG } = require('./planner');
  *   out       -> not written unless --out is passed
  */
 
-// function parseArgs(argv) {
-//   const args = { file: null, capacity: VEHICLE_CAPACITY_KG, out: null };
-//   for (const arg of argv) {
-//     if (arg.startsWith('--capacity=')) {
-//       args.capacity = Number(arg.split('=')[1]);
-//     } else if (arg.startsWith('--out=')) {
-//       args.out = arg.split('=')[1];
-//     } else if (!arg.startsWith('--')) {
-//       args.file = arg;
-//     }
-//   }
-//   return args;
-// }
+function parseArgs(argv) {
+  const args = { file: null, out: null };
+  for (const arg of argv) {
+    if (arg.startsWith('--capacity=')) {
+      args.capacity = Number(arg.split('=')[1]);
+    } else if (arg.startsWith('--out=')) {
+      args.out = arg.split('=')[1];
+    } else if (!arg.startsWith('--')) {
+      args.file = arg;
+    }
+  }
+  return args;
+}
 
 function printTrips(trips) {
   if (trips.length === 0) {
@@ -62,9 +62,10 @@ function printMalformed(malformed) {
 }
 
 function main() {
-  // const args = parseArgs(process.argv.slice(2));
-  // const inputFile = args.file;
+  const args = parseArgs(process.argv.slice(2));
+  const inputFile = args.file;
   const capacity = VEHICLE_CAPACITY_KG;
+  
 
 
   const { deliveries, malformed } = parseCsvFile(inputFile);

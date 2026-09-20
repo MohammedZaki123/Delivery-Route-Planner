@@ -40,13 +40,13 @@ function parseCsvFile(filePath) {
     //   continue;
     // }
 
-    const id = cols[idx.id];
+    const id = Number(cols[idx.id]);
     const area = cols[idx.area];
     const priority = Number(cols[idx.priority]);
     const weight = Number(cols[idx.weight]);
 
-    if (!id) {
-      malformed.push({ line: i + 1, raw: lines[i], reason: 'missing id' });
+     if (!Number.isFinite(priority) || !Number.isInteger(id) || id < 0) {
+      malformed.push({ line: i + 1, raw: lines[i], reason: 'invalid id' });
       continue;
     }
     if (seenIds.has(id)) {
