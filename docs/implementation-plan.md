@@ -111,51 +111,49 @@
 ### Logical steps
 
 1. Add an optional machine-readable output mode.
-2. Accept an output path through `--out`.
-3. Include trips and validation results in the report.
-4. Add aggregate statistics.
-5. Write the report as JSON.
+2. Accept an output path through `--out=<path>`.
+3. Include structured manifests for trips, rejected deliveries, and malformed rows.
+4. Add comprehensive aggregate operational metrics.
+5. Write the complete manifest and summary as formatted JSON.
 
 ### Implementation
 
-- The `--out=<path>` option is handled by `src/index.js`.
+- The `--out=<path>` option is handled by `src/main.js`.
 - The generated JSON report contains:
-  - Trips
-  - Rejected deliveries
-  - Malformed rows
-  - Total delivery weight
-  - Trip count
-  - Capacity utilization percentage
-- The extension uses Node.js file-system APIs.
-- The core parsing, validation, and packing logic remains unchanged.
+  - `trips`: sequential trip manifests with area, assigned deliveries, and total weight.
+  - `rejected`: deliveries exceeding the fixed 10 kg vehicle limit.
+  - `malformed`: input rows failing CSV syntax or schema validation, including line numbers and error reasons.
+  - `summary`: operational KPI dashboard including total inputs, planned deliveries, trip count, total weight, vehicle capacity (10 kg), and fleet capacity utilization percentage:
+    $$\text{avgCapacityUtilizationPct} = \frac{\text{totalWeightKg}}{\text{tripsCreated} \times 10\text{ kg}} \times 100$$
+- The extension uses Node.js native filesystem APIs (`fs.writeFileSync`).
+- The core parsing, validation, and packing logic remains modular and decoupled from output formatting.
 
 ## Phase 7: README and Reasoning Answers
 
 ### Logical steps
 
-1. Document requirements and execution commands.
-2. Explain the CSV format and command-line options.
-3. Describe the project structure.
-4. Explain sorting and packing decisions.
-5. Document limitations and scalability concerns.
-6. Describe possible future improvements.
-7. Complete all reasoning questions in the README.
+1. Document requirements and execution commands for `src/main.js`.
+2. Explain the CSV input format and optional command-line flags (`--out`).
+3. Describe the project structure including all source and test data files.
+4. Provide comprehensive answers for all 5 reasoning questions:
+   - Solution approach across all phases.
+   - Most difficult part (trade-offs between area purity, capacity utilization, and urgency fairness).
+   - Heuristic limitations (greedy First-Fit vs. optimal bin packing, categorical area boundaries, trip-level dispatch).
+   - Scalability challenges and architectural mitigations for 1,000,000 deliveries (streaming, indexed packing, external sort).
+5. Document the extension feature with schema details and operational significance.
+6. Provide step-by-step instructions for adding and testing custom datasets when forking the repository.
 
 ### Implementation
 
 - `README.md` documents Node.js 16+ requirements and CLI usage.
-- The README explains:
-  - Area-first grouping
-  - Priority-based sorting
-  - First-fit packing
-  - JSON summary output
-- The reasoning answers explain that:
-  - Area grouping reduces unnecessary cross-area mixing.
-  - Lower priority values represent more urgent deliveries.
-  - First-fit packing is simple and deterministic but not globally optimal.
-  - Large inputs may require streaming parsing, reduced in-memory grouping, and a more efficient trip lookup.
-  - Future improvements could include geographic optimization, configurable grouping policies, and optimal or approximation-based packing strategies.
-- The documented complexity is approximately:
-  - Parsing: `O(n)`
-  - Sorting: `O(n log n)` overall
-  - Packing: dependent on the number of open trips, potentially `O(n · k)`
+- The README provides explicit documentation for:
+  - Robust parsing and non-blocking malformed row isolation
+  - Area-first grouping for spatial purity
+  - First-Fit packing respecting the fixed 10 kg capacity limit
+  - Inter-trip lexicographical priority sorting with lowest delivery ID tie-breaking
+  - JSON summary manifest generation and fleet capacity utilization KPI
+- All reasoning questions in the README are answered thoroughly, detailing operational trade-offs, algorithmic complexity, and scalable production architecture.
+- Documented complexity:
+  - Parsing: $O(N)$
+  - Sorting: $O(N \log N)$ overall
+  - Packing: $O(N \cdot K)$ where $K$ is the number of open trips per area (optimizable to $O(N \log K)$ with indexed search).
